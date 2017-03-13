@@ -11,7 +11,7 @@ Develop an almost-secure OS
     1.5 - Setup and prepare the system to load 32 bit instructions, load the second stage.
         • Enable A20 Line.
         • Load GDT.
-        • Bring x86 up.
+        • Enter in Protected Mode.
         • Interact with FS's.
         • Locate and Jump to 2º Stage.
         
