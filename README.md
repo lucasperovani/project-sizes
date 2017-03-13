@@ -18,6 +18,7 @@ Develop an almost-secure OS
     2 - Prepare the terrain for the Kernel and bring many useful functions.
         • Find all OS's.
         • Include a Recover Mode.
+        • Store some System Properties.
         • Jump to Kernel.
        
     Extra:
