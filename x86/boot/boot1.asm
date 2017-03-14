@@ -19,7 +19,7 @@ bits 16                                   ; We start in 16 bits mode
 jmp short Main                            ; Jump to executable area
 nop
 
-OEMName               db "SIZES P>"       ; OS Name, can be whatever
+OEMName               db "SIZES P>"       ; OS Name, can be whatever, must be 8 bytes length
 BytespSector          dw 512
 SectorspCluster       db 8
 ReservedSectors       dw 32
@@ -28,16 +28,35 @@ DirectoryEntries      dw 0                ; FAT 32
 TotalSectors          dw 0                ; FAT 32
 MediaDescriptor       db 0xF8             ; Fixed Disk
 
+
 ;       Disk related
+
 
 SectorspFAT           dw 0                ; Only for FAT 12 or 16
 SectorspTrack         dw 63
 TotalHeads            dw 255              ; Max 255, 256 can cause a bug (???)
 HiddenSectors         dd 128
-SectorsBig            dd 0x0077DF00       ; 4GB Flash Drive
+SectorsBig            dd 0x77DF00         ; 4GB Flash Drive
 
 
 
-SectorspFAT           dd 0x00001DE8
-Flags                 dw 0
+SectorspFAT           dd 0x1DE8
+Flags1                dw 0
+FATVersion            dw 0                ; Should be always 0 in FAT 32
+RootCluster           dd 2                ; Where the Root directory is in Cluster Number
+FSISector             dw 1                ; Sector of FS Information Sector, usually 1, speeds up access
+BackupSector          dw 6                ; Sector that is located the Backup of the three FAT 32 Boot Sectors
+times 12              db 0                ; Reserved
+DiveNumber            db 0x80             ; Hard Disks or Fixed Disks (Flash Drive)
+Flags2                db 0
+BootSignature         db 0x29             ; Always this value for FAT 12/FAT 16/FAT 32
+VolumeID              dd 0x2914F5BD       ; Used to track the volume, can be anything
+VolumeLabel           db "SIZES P    "    ; Label of the Volume, must be 11 bytes length
+FSString              db "FAT 32  "       ; FS String, never trust, must be 8 bytes length
+
+
+;       Bootloader starts here
+
+
+
 
