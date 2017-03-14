@@ -39,14 +39,14 @@ HiddenSectors         dd 128
 SectorsBig            dd 0x77DF00         ; 4GB Flash Drive
 
 
-
+                      
 SectorspFAT           dd 0x1DE8
 Flags1                dw 0
 FATVersion            dw 0                ; Should be always 0 in FAT 32
 RootCluster           dd 2                ; Where the Root directory is in Cluster Number
 FSISector             dw 1                ; Sector of FS Information Sector, usually 1, speeds up access
 BackupSector          dw 6                ; Sector that is located the Backup of the three FAT 32 Boot Sectors
-times 12              db 0                ; Reserved
+TIMES 12              db 0                ; Reserved
 DiveNumber            db 0x80             ; Hard Disks or Fixed Disks (Flash Drive)
 Flags2                db 0
 BootSignature         db 0x29             ; Always this value for FAT 12/FAT 16/FAT 32
@@ -55,7 +55,32 @@ VolumeLabel           db "SIZES P    "    ; Label of the Volume, must be 11 byte
 FSString              db "FAT 32  "       ; FS String, never trust, must be 8 bytes length
 
 
+;       Allocate some messages
+
+
 ;       Bootloader starts here
+
+
+a
+
+
+TIMES 510 - ($-$$) db 0                   ; Fill the rest of the file with 0 untill the Boot Signature
+db 0xAA55
+
+                      
+FSISSignature1        dd 0x52526141       ; RRaA
+TIMES 476             db 0                ; Reserved
+FSISSignature2        dd 0x72724161       ; rrAa
+FreeDataClusters      dd 0xDCF30E00       ; Last know number of Free Data Clusters, mine was it
+AllocDataCluster      dd 6                ; Last modified cluster, it was the Backup Boot Sector
+TIMES 18              db 0
+db 0xAA55                                 ; The last four bytes must be 0x000055AA
+
+
+
+
+
+
 
 
 
