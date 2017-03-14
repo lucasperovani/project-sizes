@@ -44,8 +44,8 @@ SectorspFAT           dd 0x1DE8
 Flags1                dw 0
 FATVersion            dw 0                ; Should be always 0 in FAT 32
 RootCluster           dd 2                ; Where the Root directory is in Cluster Number
-FSISector             dw 1                ; Sector of FS Information Sector, usually 1, speeds up access
-BackupSector          dw 6                ; Sector that is located the Backup of the three FAT 32 Boot Sectors
+*FSISector             dw 1                ; Sector of FS Information Sector, usually 1, speeds up access
+*BackupSector          dw 6                ; Sector that is located the Backup of the three FAT 32 Boot Sectors
 TIMES 12              db 0                ; Reserved
 DiveNumber            db 0x80             ; Hard Disks or Fixed Disks (Flash Drive)
 Flags2                db 0
@@ -58,10 +58,16 @@ FSString              db "FAT 32  "       ; FS String, never trust, must be 8 by
 ;       Allocate some messages
 
 
+BootFail1             db "Could not find BootLoader!!!", 0
+BootFail2             db "Am I missing something???", 0
+KernelFail1           db "Could not find Kernel!!!
+KernelFail2           db "Did I mess up with my files???", 0
+
+
 ;       Bootloader starts here
 
 
-a
+Main:
 
 
 TIMES 510 - ($-$$) db 0                   ; Fill the rest of the file with 0 untill the Boot Signature
