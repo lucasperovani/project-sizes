@@ -3,6 +3,7 @@ Develop an almost-secure OS
 
 
 #Boot:
+
     1 - Create a minimal boot that will read the next part of it.
         • Find the current drive.
         • Find the next stage.
