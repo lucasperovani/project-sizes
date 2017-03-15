@@ -152,7 +152,7 @@ ReadSectors:
 push ax
 mov di, 5h
 
-.Retry
+.Retry:
 xor ax, ax                                ; Reset Driver, AH = 00h and DL = Drive
 int 13h
 
@@ -163,12 +163,12 @@ jnc .Done
 dec di                                    ; Give 5 chances
 jnz .Retry
 
-.Fail
+.Fail:
 
 mov si, ErrorRead
 call Print
 
-.Done
+.Done:
 
 pop ax
 
