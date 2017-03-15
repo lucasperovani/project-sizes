@@ -73,6 +73,15 @@ Main:
 TIMES 510 - ($-$$) db 0                   ; Fill the rest of the file with 0 untill the Boot Signature
 db 0xAA55
 
+
+;       1.5 Bootloader Continues here
+
+
+
+
+
+;       FS Information Sector
+
                       
 FSISSignature1        dd 0x52526141       ; RRaA
 TIMES 476             db 0                ; Reserved
