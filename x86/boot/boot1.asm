@@ -9,7 +9,27 @@
 ;#################################################
 
 
-org 0x7C00                                ; BIOS put us here
+;------------------------------------------------------------------------------
+;                   |                                                         |
+;     0050:0000     |     Stack End (for now, end is just a abstraction)      |
+;     0050:01FE     |     Stack Start                                         |
+;                   |                                                         |
+;------------------------------------------------------------------------------
+;                   |                                                         |
+;     0050:01FF     |     Stage 1 Bootloader Start (512 bytes)                |
+;     0050:03FF     |     Stage 1 Bootloader End                              |
+;                   |                                                         |
+;------------------------------------------------------------------------------
+;                   |                                                         |
+;     0050:0400     |     Stage 1.5 Bootloader Start (xxx Bytes)              |
+;     0050:----     |     Stage 1.5 Bootloader End                            |
+;                   |                                                         |
+;------------------------------------------------------------------------------
+
+
+org 0x06FF                                ; BIOS put us in 0x7C00, but we will move itself to this location
+                                          ; Make every Register based on this
+                                          
 bits 16                                   ; We start in 16 bits mode
                                           
 
@@ -55,15 +75,17 @@ VolumeLabel           db "SIZES P    "    ; Label of the Volume, must be 11 byte
 FSString              db "FAT 32  "       ; FS String, never trust, must be 8 bytes length
 
 
-;       Allocate some messages
+;       Allocate some useful things
 
 
-BootFail1             db "Could not find BootLoader!!!", 0x0D, 0x0A
+BootFail              db "Could not find BootLoader!!!", 0x0D, 0x0A
                          "Am I missing something???", 0
                           
-KernelFail1           db "Could not find Kernel!!!", 0x0D, 0x0A
+KernelFail            db "Could not find Kernel!!!", 0x0D, 0x0A
                          "Did I mess up with my files???", 0
-
+                         
+BootDrive             db 0                ; Drive where we Boot
+                                          
 
 ;       Bootloader starts here
 
@@ -71,7 +93,26 @@ KernelFail1           db "Could not find Kernel!!!", 0x0D, 0x0A
 Main:
 
 
-TIMES 510 - ($-$$) db 0                   ; Fill the rest of the file with 0 untill the Boot Signature
+cli                                       ; Clear Interrupts, avoid getting interrupt
+                                          
+xor ax, ax                                ; Clear AX
+
+mov ds, ax                                ; Setup Data Registers
+mov es, ax
+
+mov ax, 50h
+mov ss, ax                                ; Setup Stack Registers
+mov sp, 01FEh
+
+
+mov cx, 200h                              ; Copy all this Boot
+mov si, 7C00h                             ; BIOS put us on this location
+mov di, 6FFh                              ; Where to copy
+
+rep movsw                                 ; Move us untill CX reach 0
+
+                                          
+TIMES (510 - ($-$$))  db 0                ; Fill the rest of the file with 0 untill the Boot Signature
 db 0xAA55
 
 
@@ -83,7 +124,7 @@ db 0xAA55
 
 ;       FS Information Sector
 
-                      
+                                          
 FSISSignature1        dd 0x52526141       ; RRaA
 TIMES 476             db 0                ; Reserved
 FSISSignature2        dd 0x72724161       ; rrAa
