@@ -85,9 +85,11 @@ cli                                       ; Clear Interrupts, avoid getting inte
                                           
 xor ax, ax                                ; Clear AX
 
-mov ax, 70h
-mov ds, ax                                ; Setup Segment Registers
+mov ax, 70h                               ; Setup Segment Registers
+mov ds, ax                                
 mov es, ax
+mov fs, ax
+mov gs, ax
 
 mov ax, 70h
 mov ss, ax                                ; Setup Stack Registers
@@ -173,11 +175,17 @@ pop ax
 ret
 
 
+Print:
+
+ret
+
+
 Main:
 
 
 sti                                       ; Bring back Interrupts
 mov BYTE [BootDrive], dl                  ; Get the Drive we Boot
+mov WORD [SizeBoot15], End15 - Start15    ; Get Size of 1.5 Boot
 
 cli
 hlt
@@ -196,7 +204,7 @@ ErrorRead             db "Fail to Read the Driver!!!", 0Dh, 0Ah
                       db "He said: Leave me Alone!!!", 0
                          
 BootDrive             db 0                ; Drive where we Boot
-SizeBoot15            db 0                ; Size of the 1.5 Bootloader in Sectors
+SizeBoot15            dw 0                ; Size of the 1.5 Bootloader in Sectors
 
 TmpLBA                dw 0
 TmpSec                db 0                ; Temporary Location to hadle those vars
@@ -210,9 +218,10 @@ dw 0xAA55
 
 ;       1.5 Bootloader Continues here
 
+Start15:
 
 
-
+End15:
 
 ;       FS Information Sector
 
