@@ -58,10 +58,11 @@ FSString              db "FAT 32  "       ; FS String, never trust, must be 8 by
 ;       Allocate some messages
 
 
-BootFail1             db "Could not find BootLoader!!!", 0
-BootFail2             db "Am I missing something???", 0
-KernelFail1           db "Could not find Kernel!!!
-KernelFail2           db "Did I mess up with my files???", 0
+BootFail1             db "Could not find BootLoader!!!", 0x0D, 0x0A
+                         "Am I missing something???", 0
+                          
+KernelFail1           db "Could not find Kernel!!!", 0x0D, 0x0A
+                         "Did I mess up with my files???", 0
 
 
 ;       Bootloader starts here
