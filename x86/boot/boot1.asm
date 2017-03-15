@@ -16,18 +16,18 @@
 ;                   |                                                         |
 ;------------------------------------------------------------------------------
 ;                   |                                                         |
-;     0050:01FF     |     Stage 1 Bootloader Start (512 bytes)                |
-;     0050:03FF     |     Stage 1 Bootloader End                              |
+;     0050:0200     |     Stage 1 Bootloader Start (512 bytes)                |
+;     0050:0400     |     Stage 1 Bootloader End                              |
 ;                   |                                                         |
 ;------------------------------------------------------------------------------
 ;                   |                                                         |
-;     0050:0400     |     Stage 1.5 Bootloader Start (xxx Bytes)              |
+;     0050:0401     |     Stage 1.5 Bootloader Start (xxx Bytes)              |
 ;     0050:----     |     Stage 1.5 Bootloader End                            |
 ;                   |                                                         |
 ;------------------------------------------------------------------------------
 
 
-org 0x06FF                                ; BIOS put us in 0x7C00, but we will move itself to this location
+org 0x0700                                ; BIOS put us in 0x7C00, but we will move itself to this location
                                           ; Make every Register based on this
                                           
 bits 16                                   ; We start in 16 bits mode
@@ -64,8 +64,8 @@ SectorspFAT2          dd 0x1DE8
 Flags1                dw 0
 FATVersion            dw 0                ; Should be always 0 in FAT 32
 RootCluster           dd 2                ; Where the Root directory is in Cluster Number
-*FSISector             dw 1                ; Sector of FS Information Sector, usually 1, speeds up access
-*BackupSector          dw 6                ; Sector that is located the Backup of the three FAT 32 Boot Sectors
+FSISector             dw 1                ; Sector of FS Information Sector, usually 1, speeds up access              *
+BackupSector          dw 6                ; Sector that is located the Backup of the three FAT 32 Boot Sectors        *
 TIMES 12              db 0                ; Reserved
 DiveNumber            db 0x80             ; Hard Disks or Fixed Disks (Flash Drive)
 Flags2                db 0
@@ -73,24 +73,6 @@ BootSignature         db 0x29             ; Always this value for FAT 12/FAT 16/
 VolumeID              dd 0x2914F5BD       ; Used to track the volume, can be anything
 VolumeLabel           db "SIZES P    "    ; Label of the Volume, must be 11 bytes length
 FSString              db "FAT 32  "       ; FS String, never trust, must be 8 bytes length
-
-
-;       Allocate some useful things
-
-
-BootFail              db "Could not find BootLoader!!!", 0x0D, 0x0A
-                         "Am I missing something???", 0
-                          
-KernelFail            db "Could not find Kernel!!!", 0x0D, 0x0A
-                         "Did I mess up with my files???", 0
-                         
-BootDrive             db 0                ; Drive where we Boot
-SizeBoot15            db 0                ; Size of the 1.5 Bootloader in Sectors
-
-TmpLBA                db 0
-TmpSec                db 0                ; Temporary Location to hadle those vars
-TmpHead               db 0
-TempCyl               db 0
                                           
 
 ;       Bootloader starts here
@@ -103,12 +85,13 @@ cli                                       ; Clear Interrupts, avoid getting inte
                                           
 xor ax, ax                                ; Clear AX
 
-mov ds, ax                                ; Setup Data Registers
+mov ax, 70h
+mov ds, ax                                ; Setup Segment Registers
 mov es, ax
 
-mov ax, 50h
+mov ax, 70h
 mov ss, ax                                ; Setup Stack Registers
-mov sp, 01FEh
+mov sp, 0h
 
 
 mov cx, 200h                              ; Copy all this Boot
@@ -133,14 +116,14 @@ push dx
 xor ax, ax
 xor dx, dx
 
-mov ax, BYTE [TmpLBA]
+mov ax, WORD [TmpLBA]
 div WORD [SectorspTrack]
 inc dl
 mov BYTE [TmpSec], dl                     ; Store Sector CHS
 
 xor dx, dx
 
-div TotalHeads
+div WORD [TotalHeads]
 mov BYTE [TmpHead], dl                    ; Store Head CHS
 mov BYTE [TempCyl], al                    ; Store Cylinder CHS
 
@@ -153,21 +136,39 @@ pop ax
 ret
 
 
-CHStoLBA:
+ClustertoLBA:
 
 ret
 
 
-ReadSectors:                              ; AL = Size in Sectors to Read, CH = Low 8 bits Track/Cylinder
-                                          ; CL = 2 High bits Track/Cylinder and 3 bits Sector Number
-                                          ; DH = Head Number, DL = Driver Number, ES:BX = Point of Memory (Buffer)
-push al
+ReadSectors:
+
+; AL = Size in Sectors to Read, CH = Low 8 bits Track/Cylinder
+; CL = 2 High bits Track/Cylinder and 3 bits Sector Number
+; DH = Head Number, DL = Driver Number, ES:BX = Point of Memory (Buffer)
+
+push ax
+mov di, 5h
+
+.Retry
 xor ax, ax                                ; Reset Driver, AH = 00h and DL = Drive
 int 13h
 
-pop al
 mov ah, 0x02                              ; Function to Read Sectors
 int 13h                                   ; Call Interrupt
+
+jnc .Done
+dec di                                    ; Give 5 chances
+jnz .Retry
+
+.Fail
+
+mov si, ErrorRead
+call Print
+
+.Done
+
+pop ax
 
 ret
 
@@ -178,9 +179,33 @@ Main:
 sti                                       ; Bring back Interrupts
 mov BYTE [BootDrive], dl                  ; Get the Drive we Boot
 
+cli
+hlt
+
+
+;       Allocate some useful things
+
+
+BootFail              db "Could not find BootLoader!!!", 0Dh, 0Ah
+                      db "Am I missing something???", 0
+                          
+KernelFail            db "Could not find Kernel!!!", 0Dh, 0Ah
+                      db "Did I mess up with my files???", 0
+                      
+ErrorRead             db "Fail to Read the Driver!!!", 0Dh, 0Ah
+                      db "He said: Leave me Alone!!!", 0
+                         
+BootDrive             db 0                ; Drive where we Boot
+SizeBoot15            db 0                ; Size of the 1.5 Bootloader in Sectors
+
+TmpLBA                dw 0
+TmpSec                db 0                ; Temporary Location to hadle those vars
+TmpHead               db 0
+TempCyl               db 0
+
                                           
 TIMES (510 - ($-$$))  db 0                ; Fill the rest of the file with 0 untill the Boot Signature
-db 0xAA55
+dw 0xAA55
 
 
 ;       1.5 Bootloader Continues here
@@ -193,12 +218,12 @@ db 0xAA55
 
                                           
 FSISSignature1        dd 0x41615252       ; RRaA
-TIMES 476             db 0                ; Reserved
+TIMES 480             db 0                ; Reserved
 FSISSignature2        dd 0x61417272       ; rrAa
-FreeDataClusters      dd 0xE0F3DC         ; Last know number of Free Data Clusters, mine was it
+FreeDataClusters      dd 0x00E0F3DC       ; Last know number of Free Data Clusters, mine was it
 AllocDataCluster      dd 6                ; Last modified cluster, it was the Backup Boot Sector
-TIMES 18              db 0
-db 0xAA55                                 ; The last four bytes must be 0x000055AA
+TIMES 14              db 0
+dw 0xAA55                                 ; The last four bytes must be 0x000055AA
 
 
 
