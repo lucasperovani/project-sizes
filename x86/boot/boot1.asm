@@ -36,7 +36,7 @@ bits 16                                   ; We start in 16 bits mode
 ;       FAT 32 FS just for now
 
                                           
-jmp short Main                            ; Jump to executable area
+jmp short Start                           ; Jump to executable area
 nop
 
 OEMName               db "SIZES P>"       ; OS Name, can be whatever, must be 8 bytes length
@@ -52,7 +52,7 @@ MediaDescriptor       db 0xF8             ; Fixed Disk
 ;       Disk related
 
 
-SectorspFAT           dw 0                ; Only for FAT 12 or 16
+SectorspFAT1          dw 0                ; Only for FAT 12 or 16
 SectorspTrack         dw 63
 TotalHeads            dw 255              ; Max 255, 256 can cause a bug (???)
 HiddenSectors         dd 128
@@ -60,7 +60,7 @@ SectorsBig            dd 0x77DF00         ; 4GB Flash Drive
 
 
                       
-SectorspFAT           dd 0x1DE8
+SectorspFAT2          dd 0x1DE8
 Flags1                dw 0
 FATVersion            dw 0                ; Should be always 0 in FAT 32
 RootCluster           dd 2                ; Where the Root directory is in Cluster Number
@@ -85,12 +85,18 @@ KernelFail            db "Could not find Kernel!!!", 0x0D, 0x0A
                          "Did I mess up with my files???", 0
                          
 BootDrive             db 0                ; Drive where we Boot
+SizeBoot15            db 0                ; Size of the 1.5 Bootloader in Sectors
+
+TmpLBA                db 0
+TmpSec                db 0                ; Temporary Location to hadle those vars
+TmpHead               db 0
+TempCyl               db 0
                                           
 
 ;       Bootloader starts here
 
 
-Main:
+Start:
 
 
 cli                                       ; Clear Interrupts, avoid getting interrupt
@@ -111,6 +117,67 @@ mov di, 6FFh                              ; Where to copy
 
 rep movsw                                 ; Move us untill CX reach 0
 
+
+jmp 0000:Main                             ; Jump to the new address
+
+
+LBAtoCHS:
+
+;Sector = (LBA mod SectorspTrack) + 1
+;Head = (LBA / SectorspTrack) mod TotalHeads
+;Cylinder = (LBA / SectorspTrack) / TotalHeads
+
+push ax
+push dx
+
+xor ax, ax
+xor dx, dx
+
+mov ax, BYTE [TmpLBA]
+div WORD [SectorspTrack]
+inc dl
+mov BYTE [TmpSec], dl                     ; Store Sector CHS
+
+xor dx, dx
+
+div TotalHeads
+mov BYTE [TmpHead], dl                    ; Store Head CHS
+mov BYTE [TempCyl], al                    ; Store Cylinder CHS
+
+xor dx, dx                                ; Just to make sure they will receive the right Data
+xor ax, ax
+
+pop dx
+pop ax
+
+ret
+
+
+CHStoLBA:
+
+ret
+
+
+ReadSectors:                              ; AL = Size in Sectors to Read, CH = Low 8 bits Track/Cylinder
+                                          ; CL = 2 High bits Track/Cylinder and 3 bits Sector Number
+                                          ; DH = Head Number, DL = Driver Number, ES:BX = Point of Memory (Buffer)
+push al
+xor ax, ax                                ; Reset Driver, AH = 00h and DL = Drive
+int 13h
+
+pop al
+mov ah, 0x02                              ; Function to Read Sectors
+int 13h                                   ; Call Interrupt
+
+ret
+
+
+Main:
+
+
+sti                                       ; Bring back Interrupts
+mov BYTE [BootDrive], dl                  ; Get the Drive we Boot
+
                                           
 TIMES (510 - ($-$$))  db 0                ; Fill the rest of the file with 0 untill the Boot Signature
 db 0xAA55
@@ -125,10 +192,10 @@ db 0xAA55
 ;       FS Information Sector
 
                                           
-FSISSignature1        dd 0x52526141       ; RRaA
+FSISSignature1        dd 0x41615252       ; RRaA
 TIMES 476             db 0                ; Reserved
-FSISSignature2        dd 0x72724161       ; rrAa
-FreeDataClusters      dd 0xDCF30E00       ; Last know number of Free Data Clusters, mine was it
+FSISSignature2        dd 0x61417272       ; rrAa
+FreeDataClusters      dd 0xE0F3DC         ; Last know number of Free Data Clusters, mine was it
 AllocDataCluster      dd 6                ; Last modified cluster, it was the Backup Boot Sector
 TIMES 18              db 0
 db 0xAA55                                 ; The last four bytes must be 0x000055AA
