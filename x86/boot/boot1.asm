@@ -217,9 +217,9 @@ inc ax                                    ; Get Sectors
 mov WORD [TmpLBA], 0002h                  ; Second Sector
 call LBAtoCHS
 
-mov ch, TmpCyl
-mov cl, TmpSec
-mov dh, TmpHead
+mov ch, BYTE [TmpCyl]
+mov cl, BYTE [TmpSec]
+mov dh, BYTE [TmpHead]
 mov dl, BYTE [BootDrive]
 
 mov bx, 0201h                             ; Where to place what we are reading, ES:BX, ES already ready
