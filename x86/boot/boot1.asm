@@ -80,6 +80,8 @@ FSString              db "FAT 32  "       ; FS String, never trust, must be 8 by
 
 Start:
 
+mov si, BootFail                          ; Teste
+call Print
 
 cli                                       ; Clear Interrupts, avoid getting interrupt
                                           
@@ -101,9 +103,6 @@ mov si, 7C00h                             ; BIOS put us on this location
 mov di, 700h                              ; Where to copy
 
 rep movsw                                 ; Move us untill CX reach 0
-
-mov si, BootFail                          ; Teste
-call Print
 
 jmp 0:Main                                ; Jump to the new address
 
@@ -183,7 +182,6 @@ Print:
 push ax
 push bx
 
-mov ah, 0Eh
 xor bx, bx
 
 .Next:
@@ -191,7 +189,8 @@ xor bx, bx
 lodsb                                     ; Load next Byte in al
 or al, al
 jz .Printed
-int 13h
+mov ah, 0Eh
+int 10h
 jmp .Next
 
 .Printed:
