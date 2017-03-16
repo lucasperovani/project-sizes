@@ -253,7 +253,7 @@ SizeBoot15            dw 0                ; Size of the 1.5 Bootloader in Sector
 TmpLBA                dw 0
 TmpSec                db 0                ; Temporary Location to hadle those vars
 TmpHead               db 0
-TempCyl               db 0
+TmpCyl                db 0
 
                                           
 TIMES (510 - ($-$$))  db 0                ; Fill the rest of the file with 0 untill the Boot Signature
