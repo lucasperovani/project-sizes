@@ -42,7 +42,7 @@ nop
 OEMName               db "SIZES P>"       ; OS Name, can be whatever, must be 8 bytes length
 BytespSector          dw 512
 SectorspCluster       db 8
-ReservedSectors       dw 32
+ReservedSectors       dw 0x0430
 FATs                  db 2
 DirectoryEntries      dw 0                ; FAT 32
 TotalSectors          dw 0                ; FAT 32
@@ -205,6 +205,9 @@ Main:
 sti                                       ; Bring back Interrupts
 mov BYTE [BootDrive], dl                  ; Get the Drive we Boot
 mov WORD [SizeBoot15], End15 - Start15    ; Get Size of 1.5 Boot
+
+mov si, KernelFail
+call Print
 
 mov ax, WORD [SizeBoot15]
 div WORD [BytespSector]
