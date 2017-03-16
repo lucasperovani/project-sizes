@@ -268,7 +268,7 @@ teste db "teste", 0
 
 End15:
 
-TIMES (510-(End15-Start15)) db 0
+TIMES (512-(End15-Start15)) db 0
 
 ;       FS Information Sector
 
