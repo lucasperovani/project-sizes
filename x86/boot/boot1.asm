@@ -27,7 +27,7 @@
 ;------------------------------------------------------------------------------
 
 
-org 0x0700                                ; BIOS put us in 0x7C00, but we will move itself to 0x0700
+org 0x0500                                ; BIOS put us in 0x7C00, but we will move itself to 0x0700
                                           ; Make every Register based on this
                                           
 bits 16                                   ; We start in 16 bits mode
@@ -97,7 +97,7 @@ mov sp, 0h
 
 mov cx, 100h                              ; Copy all this Boot
 mov si, 7C00h                             ; BIOS put us on this location
-mov di, 0700h                             ; Where to copy
+mov di, 0200h                             ; Where to copy
 
 rep movsw                                 ; Move us untill CX reach 0
 
