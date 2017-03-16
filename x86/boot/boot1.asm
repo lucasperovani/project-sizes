@@ -36,7 +36,8 @@ bits 16                                   ; We start in 16 bits mode
 ;       FAT 32 FS just for now
 
                                           
-jmp Start                           ; Jump to executable area
+jmp short Start                           ; Jump to executable area
+nop
 
 OEMName               db "SIZES P>"       ; OS Name, can be whatever, must be 8 bytes length
 BytespSector          dw 512
