@@ -101,7 +101,7 @@ mov di, 0700h                             ; Where to copy
 
 rep movsw                                 ; Move us untill CX reach 0
 
-jmp 0:Main                                ; Jump to the new address
+jmp Main                                  ; Jump to the new address
 
 mov si, BootFail                          ; Teste
 call Print
