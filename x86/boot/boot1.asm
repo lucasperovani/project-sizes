@@ -96,7 +96,7 @@ mov ss, ax                                ; Setup Stack Registers
 mov sp, 0h
 
 
-mov cx, 200h                              ; Copy all this Boot
+mov cx, 100h                              ; Copy all this Boot
 mov si, 7C00h                             ; BIOS put us on this location
 mov di, 700h                              ; Where to copy
 
