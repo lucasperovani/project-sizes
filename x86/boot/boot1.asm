@@ -80,9 +80,6 @@ FSString              db "FAT 32  "       ; FS String, never trust, must be 8 by
 
 Start:
 
-mov si, BootFail                          ; Teste
-call Print
-
 cli                                       ; Clear Interrupts, avoid getting interrupt
                                           
 xor ax, ax                                ; Clear AX
@@ -100,12 +97,14 @@ mov sp, 0h
 
 mov cx, 100h                              ; Copy all this Boot
 mov si, 7C00h                             ; BIOS put us on this location
-mov di, 700h                              ; Where to copy
+mov di, 0700h                             ; Where to copy
 
 rep movsw                                 ; Move us untill CX reach 0
 
 jmp 0:Main                                ; Jump to the new address
 
+mov si, BootFail                          ; Teste
+call Print
 
 LBAtoCHS:
 
