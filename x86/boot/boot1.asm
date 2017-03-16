@@ -181,7 +181,7 @@ push bx
 mov ah, 0Eh
 xor bx, bx
 
-.Next
+.Next:
 
 lodsb                                     ; Load next Byte in al
 cmp al, al
@@ -189,7 +189,7 @@ jz .Done
 int 13h
 jmp .Next
 
-.Done
+.Done:
 
 pop bx
 pop ax
