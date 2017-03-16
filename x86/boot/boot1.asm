@@ -98,12 +98,14 @@ mov sp, 0h
 
 mov cx, 200h                              ; Copy all this Boot
 mov si, 7C00h                             ; BIOS put us on this location
-mov di, 6FFh                              ; Where to copy
+mov di, 700h                              ; Where to copy
 
 rep movsw                                 ; Move us untill CX reach 0
 
+mov si, BootFail                          ; Teste
+call Print
 
-jmp 0000:Main                             ; Jump to the new address
+jmp 0:Main                                ; Jump to the new address
 
 
 LBAtoCHS:
@@ -188,11 +190,11 @@ xor bx, bx
 
 lodsb                                     ; Load next Byte in al
 cmp al, al
-jz .Done
+jz .Printed
 int 13h
 jmp .Next
 
-.Done:
+.Printed:
 
 pop bx
 pop ax
@@ -206,7 +208,7 @@ sti                                       ; Bring back Interrupts
 mov BYTE [BootDrive], dl                  ; Get the Drive we Boot
 mov WORD [SizeBoot15], End15 - Start15    ; Get Size of 1.5 Boot
 
-mov si, KernelFail
+mov si, KernelFail                        ; Teste
 call Print
 
 mov ax, WORD [SizeBoot15]
