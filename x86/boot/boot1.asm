@@ -80,31 +80,31 @@ FSString              db "FAT 32  "       ; FS String, never trust, must be 8 by
 
 Start:
 
-;cli                                       ; Clear Interrupts, avoid getting interrupt
+cli                                       ; Clear Interrupts, avoid getting interrupt
                                           
-;xor ax, ax                                ; Clear AX
+xor ax, ax                                ; Clear AX
 
-;mov ax, 70h                               ; Setup Segment Registers
-;mov ds, ax                                
-;mov es, ax
-;mov fs, ax
-;mov gs, ax
+mov ax, 70h                               ; Setup Segment Registers
+mov ds, ax                                
+mov es, ax
+mov fs, ax
+mov gs, ax
 
-;mov ax, 70h
-;mov ss, ax                                ; Setup Stack Registers
-;mov sp, 0h
+mov ax, 70h
+mov ss, ax                                ; Setup Stack Registers
+mov sp, 0h
 
 
-;mov cx, 100h                              ; Copy all this Boot
-;mov si, 7C00h                             ; BIOS put us on this location
-;mov di, 0200h                             ; Where to copy
+mov cx, 100h                              ; Copy all this Boot
+mov si, 7C00h                             ; BIOS put us on this location
+mov di, 0200h                             ; Where to copy
 
-;rep movsw                                 ; Move us untill CX reach 0
+rep movsw                                 ; Move us untill CX reach 0
 
 mov si, BootFail                          ; Teste
 call Print
 
-jmp Main                                  ; Jump to the new address
+jmp 0:Main                                  ; Jump to the new address
 
 LBAtoCHS:
 
