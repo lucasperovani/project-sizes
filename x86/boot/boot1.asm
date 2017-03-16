@@ -189,7 +189,7 @@ xor bx, bx
 .Next:
 
 lodsb                                     ; Load next Byte in al
-cmp al, al
+or al, al
 jz .Printed
 int 13h
 jmp .Next
