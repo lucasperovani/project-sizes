@@ -134,7 +134,6 @@ xor ax, ax
 
 pop dx
 pop ax
-
 ret
 
 
@@ -171,12 +170,29 @@ call Print
 .Done:
 
 pop ax
-
 ret
 
 
 Print:
 
+push ax
+push bx
+
+mov ah, 0Eh
+xor bx, bx
+
+.Next
+
+lodsb                                     ; Load next Byte in al
+cmp al, al
+jz .Done
+int 13h
+jmp .Next
+
+.Done
+
+pop bx
+pop ax
 ret
 
 
