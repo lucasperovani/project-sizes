@@ -139,10 +139,12 @@ ret
 
 ClustertoLBA:
 
+
 ret
 
 
 ReadSectors:
+
 
 ; AL = Size in Sectors to Read, CH = Low 8 bits Track/Cylinder
 ; CL = 2 High bits Track/Cylinder and 3 bits Sector Number
@@ -174,6 +176,7 @@ ret
 
 
 Print:
+
 
 push ax
 push bx
@@ -219,7 +222,14 @@ mov cl, TmpSec
 mov dh, TmpHead
 mov dl, BYTE [BootDrive]
 
-mov bx, 0201h
+mov bx, 0201h                             ; Where to place what we are reading, ES:BX, ES already ready
+call ReadSectors
+
+mov si, teste
+call Print
+
+mov al, 0
+int 16h
 
 cli
 hlt
