@@ -64,8 +64,8 @@ SectorspFAT2          dd 0x1DE8
 Flags1                dw 0
 FATVersion            dw 0                ; Should be always 0 in FAT 32
 RootCluster           dd 2                ; Where the Root directory is in Cluster Number
-FSISector             dw 1                ; Sector of FS Information Sector, usually 1, speeds up access              *
-BackupSector          dw 6                ; Sector that is located the Backup of the three FAT 32 Boot Sectors        *
+FSISector             dw 2                ; Sector of FS Information Sector, usually 1, speeds up access              *
+BackupSector          dw 7                ; Sector that is located the Backup of the three FAT 32 Boot Sectors        *
 TIMES 12              db 0                ; Reserved
 DiveNumber            db 0x80             ; Hard Disks or Fixed Disks (Flash Drive)
 Flags2                db 0
@@ -155,6 +155,7 @@ mov di, 5h
 xor ax, ax                                ; Reset Driver, AH = 00h and DL = Drive
 int 13h
 
+pop ax
 mov ah, 0x02                              ; Function to Read Sectors
 int 13h                                   ; Call Interrupt
 
@@ -169,7 +170,6 @@ call Print
 
 .Done:
 
-pop ax
 ret
 
 
@@ -203,6 +203,24 @@ sti                                       ; Bring back Interrupts
 mov BYTE [BootDrive], dl                  ; Get the Drive we Boot
 mov WORD [SizeBoot15], End15 - Start15    ; Get Size of 1.5 Boot
 
+mov ax, WORD [SizeBoot15]
+div WORD [BytespSector]
+cmp dx, 0h
+je .Read
+inc ax                                    ; Get Sectors
+
+.Read:
+
+mov WORD [TmpLBA], 0002h                  ; Second Sector
+call LBAtoCHS
+
+mov ch, TmpCyl
+mov cl, TmpSec
+mov dh, TmpHead
+mov dl, BYTE [BootDrive]
+
+mov bx, 0201h
+
 cli
 hlt
 
@@ -217,7 +235,7 @@ KernelFail            db "Could not find Kernel!!!", 0Dh, 0Ah
                       db "Did I mess up with my files???", 0
                       
 ErrorRead             db "Fail to Read the Driver!!!", 0Dh, 0Ah
-                      db "He said: Leave me Alone!!!", 0
+                      db "It said: Leave me Alone!!!", 0
                          
 BootDrive             db 0                ; Drive where we Boot
 SizeBoot15            dw 0                ; Size of the 1.5 Bootloader in Sectors
@@ -236,8 +254,11 @@ dw 0xAA55
 
 Start15:
 
+teste db "teste", 0 
 
 End15:
+
+TIMES (510-(End15-Start15)) db 0
 
 ;       FS Information Sector
 
