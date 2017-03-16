@@ -127,7 +127,7 @@ xor dx, dx
 
 div WORD [TotalHeads]
 mov BYTE [TmpHead], dl                    ; Store Head CHS
-mov BYTE [TempCyl], al                    ; Store Cylinder CHS
+mov BYTE [TmpCyl], al                    ; Store Cylinder CHS
 
 xor dx, dx                                ; Just to make sure they will receive the right Data
 xor ax, ax
