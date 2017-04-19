@@ -11,18 +11,18 @@
 
 ;------------------------------------------------------------------------------
 ;                   |                                                         |
-;     0050:0000     |     Stack End (for now, end is just a abstraction)      |
-;     0050:01FE     |     Stack Start                                         |
+;     0000:79FF     |     Stack End (for now, end is just a abstraction)      |
+;     0000:7BFF     |     Stack Start                                         |
 ;                   |                                                         |
 ;------------------------------------------------------------------------------
 ;                   |                                                         |
-;     0050:0200     |     Stage 1 Bootloader Start (512 bytes)                |
-;     0050:0400     |     Stage 1 Bootloader End                              |
+;     0000:7C00     |     Stage 1 Bootloader Start (512 bytes)                |
+;     0000:7E00     |     Stage 1 Bootloader End                              |
 ;                   |                                                         |
 ;------------------------------------------------------------------------------
 ;                   |                                                         |
-;     0050:0401     |     Stage 1.5 Bootloader Start (xxx Bytes)              |
-;     0050:----     |     Stage 1.5 Bootloader End                            |
+;     0000:7E01     |     Stage 1.5 Bootloader Start (xxx Bytes)              |
+;     0000:----     |     Stage 1.5 Bootloader End                            |
 ;                   |                                                         |
 ;------------------------------------------------------------------------------
 
@@ -84,33 +84,25 @@ cli                                       ; Clear Interrupts, avoid getting inte
                                           
 xor ax, ax                                ; Clear AX
 
-mov ax, 70h                               ; Setup Segment Registers
-mov ds, ax                                
+mov ds, ax                                ; Setup Segment Registers
 mov es, ax
 mov fs, ax
 mov gs, ax
 
-mov ax, 70h
 mov ss, ax                                ; Setup Stack Registers
 mov sp, 0h
 
 
-mov cx, 100h                              ; Copy all this Boot
-mov si, 7C00h                             ; BIOS put us on this location
-mov di, 0200h                             ; Where to copy
-
-rep movsw                                 ; Move us untill CX reach 0
-
 mov si, BootFail                          ; Teste
 call Print
 
-jmp 0:Main                                  ; Jump to the new address
+jmp Main                                  ; Jump to the new address
 
 LBAtoCHS:
 
-;Sector = (LBA mod SectorspTrack) + 1
-;Head = (LBA / SectorspTrack) mod TotalHeads
-;Cylinder = (LBA / SectorspTrack) / TotalHeads
+; Sector   = (LBA mod SectorspTrack) + 1
+; Head     = (LBA / SectorspTrack) mod TotalHeads
+; Cylinder = (LBA / SectorspTrack) / TotalHeads
 
 push ax
 push dx
@@ -225,7 +217,7 @@ mov cl, BYTE [TmpSec]
 mov dh, BYTE [TmpHead]
 mov dl, BYTE [BootDrive]
 
-mov bx, 0201h                             ; Where to place what we are reading, ES:BX, ES already ready
+mov bx, 7E01h                             ; Where to place what we are reading, ES:BX, ES already ready
 call ReadSectors
 
 mov si, teste
@@ -265,6 +257,8 @@ dw 0xAA55
 
 ;       1.5 Bootloader Continues here
 
+org 0x7E01
+
 Start15:
 
 teste db "teste", 0 
@@ -292,4 +286,8 @@ dw 0xAA55                                 ; The last four bytes must be 0x000055
 
 
 
+; mov cx, 100h                              ; Copy all this Boot
+; mov si, 7C00h                             ; BIOS put us on this location
+; mov di, 0200h                             ; Where to copy
 
+; rep movsw                                 ; Move us untill CX reach 0
