@@ -93,9 +93,6 @@ mov ss, ax                                ; Setup Stack Registers
 mov sp, 0h
 
 
-mov si, BootFail                          ; Teste
-call Print
-
 jmp Main                                  ; Jump to the new address
 
 LBAtoCHS:
@@ -198,9 +195,6 @@ sti                                       ; Bring back Interrupts
 mov BYTE [BootDrive], dl                  ; Get the Drive we Boot
 mov WORD [SizeBoot15], End15 - Start15    ; Get Size of 1.5 Boot
 
-mov si, KernelFail                        ; Teste
-call Print
-
 mov ax, WORD [SizeBoot15]
 div WORD [BytespSector]
 cmp dx, 0h
@@ -209,7 +203,7 @@ inc ax                                    ; Get Sectors
 
 .Read:
 
-mov WORD [TmpLBA], 0002h                  ; Second Sector
+mov WORD [TmpLBA], 0001h                  ; Second Sector
 call LBAtoCHS
 
 mov ch, BYTE [TmpCyl]
@@ -217,11 +211,11 @@ mov cl, BYTE [TmpSec]
 mov dh, BYTE [TmpHead]
 mov dl, BYTE [BootDrive]
 
-mov bx, 7E01h                             ; Where to place what we are reading, ES:BX, ES already ready
+mov bx, 0x7E01                            ; Where to place what we are reading, ES:BX, ES already ready
 call ReadSectors
 
-mov si, teste
-call Print
+
+jmp 0x7E01
 
 mov al, 0
 int 16h
@@ -234,13 +228,13 @@ hlt
 
 
 BootFail              db "Could not find BootLoader!!!", 0Dh, 0Ah
-                      db "Am I missing something???", 0
+                      db "Am I missing something???", 0Dh, 0Ah, 0
                           
 KernelFail            db "Could not find Kernel!!!", 0Dh, 0Ah
-                      db "Did I mess up with my files???", 0
+                      db "Did I mess up with my files???", 0Dh, 0Ah, 0
                       
 ErrorRead             db "Fail to Read the Driver!!!", 0Dh, 0Ah
-                      db "It said: Leave me Alone!!!", 0
+                      db "It said: Leave me Alone!!!", 0Dh, 0Ah, 0
                          
 BootDrive             db 0                ; Drive where we Boot
 SizeBoot15            dw 0                ; Size of the 1.5 Bootloader in Sectors
@@ -257,11 +251,13 @@ dw 0xAA55
 
 ;       1.5 Bootloader Continues here
 
-org 0x7E01
 
 Start15:
 
-teste db "teste", 0 
+
+
+cli
+hlt
 
 End15:
 
@@ -277,6 +273,7 @@ FreeDataClusters      dd 0x00E0F3DC       ; Last know number of Free Data Cluste
 AllocDataCluster      dd 6                ; Last modified cluster, it was the Backup Boot Sector
 TIMES 14              db 0
 dw 0xAA55                                 ; The last four bytes must be 0x000055AA
+
 
 
 
